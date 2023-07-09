@@ -25,26 +25,29 @@ static inline size_t moveup_headtail_value(size_t value, size_t max)
 
 static inline void moveup_headtail_pointer(circular_buffer_t* me)
 {
+    static uint32_t buffer_size;
+    buffer_size = circular_buffer_size(me);
+
     if(me->isFull == true)
     {
         me->tail = moveup_headtail_value(me->tail, me->max);
         me->sum += me->buffer[me->head];
         me->sum -= me->buffer[me->tail];
-        
-        if(me->avg_every_n > 0) 
-        {
-            me->avg_cntr++;     
-            if(me->avg_cntr >= me->avg_every_n && me->sum > 0)
-            {
-                me->avg_cntr = 0;
-                me->average = (float)me->sum/(float)me->max;
-            }
-        }
 
     }
     else 
     {
         me->sum += me->buffer[me->head];
+    }
+
+    if(me->avg_every_n > 0) 
+    {
+        me->avg_cntr++;     
+        if(me->avg_cntr >= me->avg_every_n && me->sum > 0)
+        {
+            me->avg_cntr = 0;
+            me->average = (float)me->sum/(float)buffer_size;
+        }
     }
 
     me->head = moveup_headtail_value(me->head, me->max);

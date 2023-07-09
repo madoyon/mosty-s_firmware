@@ -3,11 +3,13 @@
 #include <Wire.h>
 #include "Adafruit_LTR329_LTR303.h"
 
+#define CBUFFER_LENGTH  50
+
 struct LTR303_t {
   Adafruit_LTR303 ltr303;
   uint16_t visible_ir_lux;
   uint16_t ir_lux;
-  uint16_t visible_lux; 
+  uint32_t buffer[CBUFFER_LENGTH];
 };
 
 uint32_t buffer[10] = {0};
