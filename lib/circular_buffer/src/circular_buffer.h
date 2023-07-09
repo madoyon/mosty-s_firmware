@@ -30,7 +30,7 @@ struct circular_buffer_t {
     size_t avg_every_n;
     size_t avg_cntr;
 
-    uint8_t* buffer;
+    uint32_t* buffer;
    
     bool isFull;
 };
@@ -39,7 +39,26 @@ struct circular_buffer_t {
 /* Global Variables -------------------------------------------------------*/
 /* Public Declarations functions ------------------------------------------*/
 
-circular_buffer_t* init_circular_buffer(uint8_t* buffer, size_t size);
+circular_buffer_t* init_circular_buffer(uint32_t* buffer, size_t size);
+
+void circular_buffer_set_n_avg(circular_buffer_t* me, size_t avg_every_n);
+
+void circular_buffer_free(circular_buffer_t* me);
+
+void circular_buffer_add(circular_buffer_t* me, size_t data);
+
+void circular_buffer_reset(circular_buffer_t* me);
+
+size_t circular_buffer_size(circular_buffer_t* me);
+
+size_t circular_buffer_capacity(circular_buffer_t* me);
+
+int circular_buffer_get(circular_buffer_t* me, uint32_t* data);
+
+int circular_buffer_get(circular_buffer_t* me, uint32_t* data);
+
+float circular_buffer_get_avg(circular_buffer_t* me);
+
 /* External Declarations functions ----------------------------------------*/
 
 #endif	/* CIRCULAR_BUFFER_H_ */

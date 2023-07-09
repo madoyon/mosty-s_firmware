@@ -27,14 +27,14 @@ static inline void moveup_headtail_pointer(circular_buffer_t* me)
 {
     if(me->isFull == true)
     {
+        me->tail = moveup_headtail_value(me->tail, me->max);
         me->sum += me->buffer[me->head];
         me->sum -= me->buffer[me->tail];
-        me->tail = moveup_headtail_value(me->tail, me->max);
         
         if(me->avg_every_n > 0) 
         {
             me->avg_cntr++;     
-            if(me->avg_cntr >= me->avg_every_n)
+            if(me->avg_cntr >= me->avg_every_n && me->sum > 0)
             {
                 me->avg_cntr = 0;
                 me->average = (float)me->sum/(float)me->max;
@@ -54,7 +54,7 @@ static inline void moveup_headtail_pointer(circular_buffer_t* me)
 /* Private Definitions Functions ------------------------------------------*/
 /* Public Definitions Functions -------------------------------------------*/
 
-circular_buffer_t* init_circular_buffer(uint8_t* buffer, size_t size) 
+circular_buffer_t* init_circular_buffer(uint32_t* buffer, size_t size) 
 {
     circular_buffer_t* cbuf = (circular_buffer_t*)malloc(sizeof(circular_buffer_t));
 
@@ -118,7 +118,7 @@ size_t circular_buffer_capacity(circular_buffer_t* me)
     return me->max;
 }
 
-int circular_buffer_get(circular_buffer_t* me, uint8_t* data)
+int circular_buffer_get(circular_buffer_t* me, uint32_t* data)
 {
     int r = -1;
 
