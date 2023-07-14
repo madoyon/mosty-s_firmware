@@ -8,6 +8,7 @@
 /* Private Includes -------------------------------------------------------*/
 #include <stdlib.h>
 #include <stdio.h>
+#include "Arduino.h"
 
 #include "circular_buffer.h"
 /* Private Defines --------------------------------------------------------*/
@@ -31,9 +32,8 @@ static inline void moveup_headtail_pointer(circular_buffer_t* me)
     if(me->isFull == true)
     {
         me->tail = moveup_headtail_value(me->tail, me->max);
-        me->sum += me->buffer[me->head];
         me->sum -= me->buffer[me->tail];
-
+        me->sum += me->buffer[me->head];
     }
     else 
     {
@@ -61,6 +61,7 @@ circular_buffer_t* init_circular_buffer(uint32_t* buffer, size_t size)
 {
     circular_buffer_t* cbuf = (circular_buffer_t*)malloc(sizeof(circular_buffer_t));
 
+    cbuf->average = 0;
     cbuf->head = 0;
     cbuf->tail = 0;
     cbuf->max = size;

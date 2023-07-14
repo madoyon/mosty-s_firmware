@@ -1,65 +1,52 @@
 #include <Arduino.h>
-#include "circular_buffer.h"
-#include <Wire.h>
-#include "Adafruit_LTR329_LTR303.h"
+#include "esp32-hal-ledc.h"
+#include "main.h"
+#include "light.h"
 
-#define CBUFFER_LENGTH  50
+#define LEDC_CHANNEL_0  0
+#define LEDC_FREQUENCY_HZ 100000
+#define LEDC_TIMER_2_BIT  2
+#define LEDC_PIN  6
 
-struct LTR303_t {
-  Adafruit_LTR303 ltr303;
-  uint16_t visible_ir_lux;
-  uint16_t ir_lux;
-  uint32_t buffer[CBUFFER_LENGTH];
-};
-
-uint32_t buffer[10] = {0};
-circular_buffer_t* light_sensor_cbuf;
-
-uint32_t ch0;
-
+uint32_t soil_moisture;
 LTR303_t light_sensor;
-
-bool light_sensor_isInitialized = false;
+static float avg_light;
 
 void setup() {
 
+  //Initialize sensors (light, moisture, temperature)
+  light_sensor = init_task_light_sensor(PIN_LTR303_SDA, PIN_LTR303_SCL);
+
+
+  ledcSetup(LEDC_CHANNEL_0, LEDC_FREQUENCY_HZ, LEDC_TIMER_2_BIT);
+  ledcAttachPin(LEDC_PIN, LEDC_CHANNEL_0);
+
+  ledcWrite(LEDC_CHANNEL_0, 1);
 
   // put your setup code here, to run once:
   Serial.begin(115200);
-
-  //Set I2C pins according to schematic 
-  Wire.setPins(20, 21);
-
-  light_sensor_cbuf = init_circular_buffer(buffer, 10);
-
-  circular_buffer_set_n_avg(light_sensor_cbuf, 5);
-
-  Serial.println("Initialization of LTR303");
-  light_sensor_isInitialized = light_sensor.ltr303.begin(&Wire);
-  //Set gain, integration time and measurement rate
-  light_sensor.ltr303.setGain(LTR3XX_GAIN_8);
-  light_sensor.ltr303.setIntegrationTime(LTR3XX_INTEGTIME_200);
-  light_sensor.ltr303.setMeasurementRate(LTR3XX_MEASRATE_1000);
-
-  Serial.print("LTR303 Initialization: ");
-  Serial.println(light_sensor_isInitialized);
-  
 }
 
 void loop() {
   static int test = 0;
-  light_sensor.ltr303.readBothChannels(light_sensor.visible_ir_lux, light_sensor.ir_lux);
+  static uint16_t ch0, ch1;
+  //Read both channels (visible + ir & ir)
+  // light_sensor.ltr303.readBothChannels(ch0, ch1);
 
-  Serial.print("Channel0: ");
-  Serial.println(light_sensor.visible_ir_lux);
+  task_light_sensor(&light_sensor, &avg_light);
 
-  Serial.println(light_sensor_cbuf->head);
-  circular_buffer_add(light_sensor_cbuf, light_sensor.visible_ir_lux);
-  Serial.println(light_sensor_cbuf->buffer[light_sensor_cbuf->head]);
-  Serial.println(light_sensor_cbuf->sum);
-  Serial.println(light_sensor_cbuf->average);
+  // soil_moisture = analogRead(0);
+  // Serial.print("Frequency: ");
+  // Serial.print(ledcReadFreq(LEDC_CHANNEL_0));
+  // Serial.print(" Duty: ");
+  // Serial.print(ledcRead(LEDC_CHANNEL_0));
+  // Serial.print(" Analog input: ");
+  // Serial.println(soil_moisture);
+  // Serial.print("CH0: ");
+  // Serial.print(ch0);;
+  // Serial.print("CH1: ");
+  // Serial.println(ch1);
 
   delay(1000);
-  test++;
 }
 
