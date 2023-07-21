@@ -7,15 +7,14 @@
 
 /* Header Guard -----------------------------------------------------------*/
 
-#ifndef LIGHT_H_
-#define LIGHT_H_
+#ifndef TEMPERATURE_H_
+#define TEMPERATURE_H_
 
 /* Public Includes --------------------------------------------------------*/
 #include <stdlib.h>
 #include <stdio.h>
-#include "Adafruit_LTR329_LTR303.h"
 #include "circular_buffer.h"
-#include <Wire.h>
+#include "Arduino.h"
 
 /* Public Defines ---------------------------------------------------------*/
 #define CBUFFER_LENGTH  10
@@ -26,21 +25,17 @@
 /* Public Structures ------------------------------------------------------*/
 
 typedef struct {
-  Adafruit_LTR303 ltr303;
-  uint16_t visible_ir_lux = 0;
-  uint16_t ir_lux = 0;
   circular_buffer_t* cbuf;
-  bool isInitialized = false;
-} LTR303_t;
+  uint8_t pin_adc;
+} temperature_t;
 
-// LTR303_t light_sensor;
 
 /* Global Variables -------------------------------------------------------*/
 /* Public Declarations functions ------------------------------------------*/
-LTR303_t init_task_light_sensor(uint8_t sda, uint8_t scl);
+temperature_t init_task_temperature_sensor(uint8_t pin_adc);
 
-void task_light_sensor(LTR303_t* light_sensor, float* avg_light);
+void task_temperature_sensor(temperature_t* soil, float* avg_temp);
 
 /* External Declarations functions ----------------------------------------*/
 
-#endif	/* LIGHT_H_ */
+#endif	/* TEMPERATURE_H_ */

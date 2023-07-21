@@ -55,12 +55,12 @@ void task_light_sensor(LTR303_t* light_sensor, float* avg_light)
     circular_buffer_add(light_sensor->cbuf, ch0);
 
     //Get the average from the circular buffer
-    Serial.print("Sum: ");
-    Serial.println(light_sensor->cbuf->sum);
+    // Serial.print("Sum: ");
+    // Serial.println(light_sensor->cbuf->sum);
 
     //Get the average from the circular buffer
-    Serial.print("Average: ");
-    Serial.println(circular_buffer_get_avg(light_sensor->cbuf));
+    // Serial.print("Average: ");
+    // Serial.println(circular_buffer_get_avg(light_sensor->cbuf));
 }
 
 /* External Definitions Functions -----------------------------------------*/
