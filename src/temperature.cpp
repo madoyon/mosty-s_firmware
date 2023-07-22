@@ -70,9 +70,11 @@ temperature_t init_task_temperature_sensor(uint8_t pin_adc)
     {
       Serial.println("Error, eFuse values are not burned");
     }
+    ESP_ERROR_CHECK( cal_status );
 
     //Calibrate ADC
     esp_adc_cal_characterize(ADC_UNIT_1, ADC_ATTEN_11db, ADC_WIDTH_12Bit, 2500, &esp_cal);
+    
     return temp_sensor;
 }
 
