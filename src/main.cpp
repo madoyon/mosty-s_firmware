@@ -9,17 +9,12 @@
 #include "esp_rmaker_core.h"
 #include "esp_rmaker_standard_devices.h"
 #include "esp_rmaker_standard_params.h"
+#include "esp_rmaker_schedule.h"
+#include "esp_rmaker_scenes.h"
 #include <nvs_flash.h>
 #include <esp_log.h>
 #include "app_wifi.h"
 #include "app_insights.h"
-
-// #include "RMaker.h"
-// #include "WiFi.h"
-// #include "WiFiProv.h"
-
-// const char* service_name = "PROV_12";
-// const char* pop = "1234567";
 
 uint32_t soil_moisture;
 soil_t soil_sensor;
@@ -56,7 +51,6 @@ void setup() {
         err = nvs_flash_init();
     }
     ESP_ERROR_CHECK( err );
-  Serial.println("Initializing wifi init");
 
     //Initialize wifi settings
     app_wifi_init();
@@ -67,15 +61,13 @@ void setup() {
     esp_rmaker_config_t rainmaker_cfg = {
         .enable_time_sync = false,
     };
-  Serial.println("Initializing nvs flash init partition");
 
-    // err = nvs_flash_init_partition("nvs");
-    // if (err != ESP_OK) {
-    //     ESP_LOGE(TAG, "NVS Flash init failed");
-    //     ESP_ERROR_CHECK( err );
+    err = nvs_flash_init_partition("nvs");
+    if (err != ESP_OK) {
+        ESP_LOGE(TAG, "NVS Flash init failed");
+        ESP_ERROR_CHECK( err );
 
-    // }
-  Serial.println("Initializing esp rmaker node init");
+    }
 
     esp_rmaker_node_t *node = esp_rmaker_node_init(&rainmaker_cfg, "ESP RainMaker Device", "Temperature Sensor");
     if (!node) {
@@ -85,32 +77,47 @@ void setup() {
     }
 
     /* Create a device and add the relevant parameters to it */
-    // temp_sensor_rmaker = esp_rmaker_temp_sensor_device_create("Temperature Sensor", NULL, avg_temp);
-    // esp_rmaker_node_add_device(node, temp_sensor_rmaker);
+    temp_sensor_rmaker = esp_rmaker_temp_sensor_device_create("Temperature Sensor", NULL, avg_temp);
+    esp_rmaker_node_add_device(node, temp_sensor_rmaker);
 
-    // /* Enable OTA */
-    // esp_rmaker_ota_enable_default();
+    /* Enable OTA */
+    esp_rmaker_ota_enable_default();
 
-    // /* Enable Insights. Requires CONFIG_ESP_INSIGHTS_ENABLED=y */
-    // app_insights_enable();
+    /* Enable scheduling. */
+    esp_rmaker_schedule_enable();
 
-    // /* Start the ESP RainMaker Agent */
-    // esp_rmaker_start();
+    /* Enable Scenes */
+    esp_rmaker_scenes_enable();
 
-    // /* Start the Wi-Fi.
-    //  * If the node is provisioned, it will start connection attempts,
-    //  * else, it will start Wi-Fi provisioning. The function will return
-    //  * after a connection has been successfully established
-    //  */
-    // err = app_wifi_start(POP_TYPE_RANDOM);
-    // if (err != ESP_OK) {
-    //     ESP_LOGE(TAG, "Could not start Wifi. Aborting!!!");
-    //     vTaskDelay(5000/portTICK_PERIOD_MS);
-    //     abort();
-    // }
+    Serial.println("app insight");
+
+    /* Enable Insights. Requires CONFIG_ESP_INSIGHTS_ENABLED=y */
+    app_insights_enable();
+
+    Serial.println("esp_rmaker_start");
+
+    /* Start the ESP RainMaker Agent */
+    esp_rmaker_start();
+
+    /* Start the Wi-Fi.
+     * If the node is provisioned, it will start connection attempts,
+     * else, it will start Wi-Fi provisioning. The function will return
+     * after a connection has been successfully established
+     */
+    Serial.println("app_wifi");
+
+    err = app_wifi_start(POP_TYPE_NONE);
+    if (err != ESP_OK) {
+        ESP_LOGE(TAG, "Could not start Wifi. Aborting!!!");
+        delay(1000);
+        abort();
+    }
+    Serial.println("app_wifi done");
 }
 
 void loop() {
+
+  static uint32_t counter = 0;
 
   static uint32_t soil_moisture = 0;
 
@@ -120,8 +127,15 @@ void loop() {
 
   task_temperature_sensor(&temp_sensor, &avg_temp);
 
-  Serial.println("loop");
+  if(counter > 100)
+  {
+    esp_rmaker_param_update_and_report(
+          esp_rmaker_device_get_param_by_type(temp_sensor_rmaker, "esp.param.temperature"),
+          esp_rmaker_float(avg_temp));
+    counter = 0;
+    Serial.println(avg_temp);
+  }
 
-
-  delay(1000);
+  delay(100);
+  counter++;
 }

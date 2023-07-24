@@ -19,7 +19,8 @@
       ]
     ],
     "mcu": "esp32c3",
-    "variant": "lolin_c3_mini"
+    "variant": "lolin_c3_mini",
+    "partitions": "partitions.csv"
   },
   "connectivity": [
     "wifi"

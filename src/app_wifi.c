@@ -234,7 +234,7 @@ static esp_err_t read_random_bytes_from_nvs(uint8_t **random_bytes, size_t *len)
 static esp_err_t get_device_service_name(char *service_name, size_t max)
 {
     uint8_t *nvs_random = NULL;
-    const char *ssid_prefix = "Grosvenor wifi";
+    const char *ssid_prefix = "PROV";
     size_t nvs_random_size = 0;
     if ((read_random_bytes_from_nvs(&nvs_random, &nvs_random_size) != ESP_OK) || nvs_random_size < 3) {
         uint8_t eth_mac[6];
