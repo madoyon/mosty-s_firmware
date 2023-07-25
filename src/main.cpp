@@ -11,12 +11,15 @@
 #include "esp_rmaker_standard_params.h"
 #include "esp_rmaker_schedule.h"
 #include "esp_rmaker_scenes.h"
+#include "esp_rmaker_utils.h"
 #include <nvs_flash.h>
 #include <esp_log.h>
 #include "app_wifi.h"
 #include "app_insights.h"
 
-#define DEBUG_ENABLE 1
+#define DEBUG_ENABLE 0
+#define WIFI_RESET_BUTTON_TIMEOUT       3
+#define FACTORY_RESET_BUTTON_TIMEOUT    10
 
 uint32_t soil_moisture;
 soil_t soil_sensor;
@@ -37,6 +40,7 @@ bool task_100_ms_flag = false;
 bool task_1000_ms_flag = false;
 bool task_2000_ms_flag = false;
 bool task_5000_ms_flag = false;
+
 
 void setup() {
 
@@ -83,12 +87,12 @@ void setup() {
 
     /* Create a device and add the relevant parameters to it */
     temp_sensor_rmaker = esp_rmaker_temp_sensor_device_create("Temperature Sensor", NULL, avg_temp);
-    // light_sensor_rmaker = esp_rmaker_temp_sensor_device_create("Light Sensor", NULL, avg_light);
-    // soil_sensor_rmaker = esp_rmaker_temp_sensor_device_create("Soil Sensor", NULL, avg_soil);
+    light_sensor_rmaker = esp_rmaker_temp_sensor_device_create("Light Sensor", NULL, avg_light);
+    soil_sensor_rmaker = esp_rmaker_temp_sensor_device_create("Soil Sensor", NULL, avg_soil);
 
     esp_rmaker_node_add_device(node, temp_sensor_rmaker);
-    // esp_rmaker_node_add_device(node, light_sensor_rmaker);
-    // esp_rmaker_node_add_device(node, soil_sensor_rmaker);
+    esp_rmaker_node_add_device(node, light_sensor_rmaker);
+    esp_rmaker_node_add_device(node, soil_sensor_rmaker);
 
     /* Enable OTA */
     esp_rmaker_ota_enable_default();
@@ -99,12 +103,8 @@ void setup() {
     /* Enable Scenes */
     esp_rmaker_scenes_enable();
 
-    Serial.println("app insight");
-
     /* Enable Insights. Requires CONFIG_ESP_INSIGHTS_ENABLED=y */
     app_insights_enable();
-
-    Serial.println("esp_rmaker_start");
 
     /* Start the ESP RainMaker Agent */
     esp_rmaker_start();
@@ -126,7 +126,6 @@ void setup() {
 void loop() {
 
   static uint32_t counter_100ms = millis();
-  static uint32_t counter_1000ms = millis();
   static uint32_t counter_5000ms = millis();
 
   if(task_100_ms_flag)
@@ -135,15 +134,6 @@ void loop() {
     task_soil_sensor(&soil_sensor, &avg_soil);
     task_temperature_sensor(&temp_sensor, &avg_temp);
     task_100_ms_flag = false;
-#if DEBUG_ENABLE == 1
-    Serial.println("100ms");
-    Serial.print("Avg light value: ");
-    Serial.println(avg_light);
-    Serial.print("Avg soil value: ");
-    Serial.println(avg_soil);
-    Serial.print("Avg temp value: ");
-    Serial.println(avg_temp);
-#endif
   }
   
   if(task_5000_ms_flag)
@@ -151,17 +141,25 @@ void loop() {
       esp_rmaker_param_update_and_report(
         esp_rmaker_device_get_param_by_type(temp_sensor_rmaker, "esp.param.temperature"),
         esp_rmaker_float(avg_temp));
-    
-      // esp_rmaker_param_update_and_report(
-      //   esp_rmaker_device_get_param_by_type(temp_sensor_rmaker, "esp.param.intensity"),
-      //   esp_rmaker_float(avg_light));
+      
+      
+      esp_rmaker_param_update_and_report(
+        esp_rmaker_device_get_param_by_type(light_sensor_rmaker, "esp.param.temperature"),
+        esp_rmaker_float(avg_light));
 
-      // esp_rmaker_param_update_and_report(
-      //   esp_rmaker_device_get_param_by_type(temp_sensor_rmaker, "esp.param.temperature"),
-      //   esp_rmaker_float(avg_soil));
+
+      esp_rmaker_param_update_and_report(
+        esp_rmaker_device_get_param_by_type(soil_sensor_rmaker, "esp.param.temperature"),
+        esp_rmaker_float(avg_soil));
       task_5000_ms_flag = false;
 #if DEBUG_ENABLE == 1
       Serial.println("5000ms");
+      Serial.print("Avg light value: ");
+      Serial.println(avg_light);
+      Serial.print("Avg soil value: ");
+      Serial.println(avg_soil);
+      Serial.print("Avg temp value: ");
+      Serial.println(avg_temp);
 #endif 
   }
 
@@ -176,4 +174,5 @@ void loop() {
     task_5000_ms_flag = true;
     counter_5000ms = millis();
   }
+
 }

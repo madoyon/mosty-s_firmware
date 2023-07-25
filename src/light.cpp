@@ -23,7 +23,11 @@ uint32_t buffer_visible_ir[CBUFFER_LENGTH] = {0};
 
 LTR303_t init_task_light_sensor(uint8_t sda, uint8_t scl)
 {
-    LTR303_t light_sensor; 
+    LTR303_t light_sensor;
+    light_sensor.ltr303 = Adafruit_LTR303();
+    light_sensor.ir_lux = 0;
+    light_sensor.visible_ir_lux = 0;
+    light_sensor.isInitialized = false;
 
     //Set I2C pins 
     Wire.setPins(sda, scl);
@@ -54,13 +58,7 @@ void task_light_sensor(LTR303_t* light_sensor, float* avg_light)
     //Add data to circular buffer
     circular_buffer_add(light_sensor->cbuf, ch0);
 
-    //Get the average from the circular buffer
-    // Serial.print("Sum: ");
-    // Serial.println(light_sensor->cbuf->sum);
-
-    //Get the average from the circular buffer
-    // Serial.print("Average: ");
-    // Serial.println(circular_buffer_get_avg(light_sensor->cbuf));
+    *avg_light = circular_buffer_get_avg(light_sensor->cbuf);
 }
 
 /* External Definitions Functions -----------------------------------------*/

@@ -56,9 +56,11 @@ void task_soil_sensor(soil_t* soil_sensor, float* avg_soil)
     static uint16_t soil_value = 0;
     //Read adc value for the soil
     soil_value = analogRead(soil_sensor->pin_adc);
-    
+
     //Add data to circular buffer
     circular_buffer_add(soil_sensor->cbuf, soil_value);
+
+    *avg_soil = (float)circular_buffer_get_avg(soil_sensor->cbuf);
 
 #if DEBUG_MODE == 1
     //Get the average from the circular buffer
