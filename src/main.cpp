@@ -16,6 +16,8 @@
 #include "app_wifi.h"
 #include "app_insights.h"
 
+#define DEBUG_ENABLE 1
+
 uint32_t soil_moisture;
 soil_t soil_sensor;
 LTR303_t light_sensor;
@@ -24,26 +26,29 @@ static float avg_light = 0;
 static float avg_soil = 0;
 static float avg_temp = 0;
 
-//Test esp32 rainmaker
+//ESP32 rainmaker devices 
 static const char *TAG = "app_main";
 esp_rmaker_device_t* temp_sensor_rmaker;
+esp_rmaker_device_t* light_sensor_rmaker;
+esp_rmaker_device_t* soil_sensor_rmaker;
+
+//Scheduler variables
+bool task_100_ms_flag = false;
+bool task_1000_ms_flag = false;
+bool task_2000_ms_flag = false;
+bool task_5000_ms_flag = false;
 
 void setup() {
 
   //Initialize sensors (light, moisture, temperature)
-  // light_sensor = init_task_light_sensor(PIN_LTR303_SDA, PIN_LTR303_SCL);
-
-  // soil_sensor = init_task_soil_sensor(PIN_SOIL_PWM, PIN_SOIL_ADC);
-
+  light_sensor = init_task_light_sensor(PIN_LTR303_SDA, PIN_LTR303_SCL);
+  soil_sensor = init_task_soil_sensor(PIN_SOIL_PWM, PIN_SOIL_ADC);
   temp_sensor = init_task_temperature_sensor(PIN_TEMP_AMBIANT);
 
-  
-  // put your setup code here, to run once:
+#if DEBUG_ENABLE == 1
   Serial.begin(115200);
+#endif
 
-  delay(3000);
-
-  Serial.println("Initializing nvs flash init");
     /* Initialize NVS. */
     esp_err_t err = nvs_flash_init();
     if (err == ESP_ERR_NVS_NO_FREE_PAGES || err == ESP_ERR_NVS_NEW_VERSION_FOUND) {
@@ -78,7 +83,12 @@ void setup() {
 
     /* Create a device and add the relevant parameters to it */
     temp_sensor_rmaker = esp_rmaker_temp_sensor_device_create("Temperature Sensor", NULL, avg_temp);
+    // light_sensor_rmaker = esp_rmaker_temp_sensor_device_create("Light Sensor", NULL, avg_light);
+    // soil_sensor_rmaker = esp_rmaker_temp_sensor_device_create("Soil Sensor", NULL, avg_soil);
+
     esp_rmaker_node_add_device(node, temp_sensor_rmaker);
+    // esp_rmaker_node_add_device(node, light_sensor_rmaker);
+    // esp_rmaker_node_add_device(node, soil_sensor_rmaker);
 
     /* Enable OTA */
     esp_rmaker_ota_enable_default();
@@ -104,7 +114,6 @@ void setup() {
      * else, it will start Wi-Fi provisioning. The function will return
      * after a connection has been successfully established
      */
-    Serial.println("app_wifi");
 
     err = app_wifi_start(POP_TYPE_NONE);
     if (err != ESP_OK) {
@@ -112,30 +121,59 @@ void setup() {
         delay(1000);
         abort();
     }
-    Serial.println("app_wifi done");
 }
 
 void loop() {
 
-  static uint32_t counter = 0;
+  static uint32_t counter_100ms = millis();
+  static uint32_t counter_1000ms = millis();
+  static uint32_t counter_5000ms = millis();
 
-  static uint32_t soil_moisture = 0;
-
-  // task_light_sensor(&light_sensor, &avg_light);
-
-  // task_soil_sensor(&soil_sensor, &avg_soil);
-
-  task_temperature_sensor(&temp_sensor, &avg_temp);
-
-  if(counter > 100)
+  if(task_100_ms_flag)
   {
-    esp_rmaker_param_update_and_report(
-          esp_rmaker_device_get_param_by_type(temp_sensor_rmaker, "esp.param.temperature"),
-          esp_rmaker_float(avg_temp));
-    counter = 0;
+    task_light_sensor(&light_sensor, &avg_light);
+    task_soil_sensor(&soil_sensor, &avg_soil);
+    task_temperature_sensor(&temp_sensor, &avg_temp);
+    task_100_ms_flag = false;
+#if DEBUG_ENABLE == 1
+    Serial.println("100ms");
+    Serial.print("Avg light value: ");
+    Serial.println(avg_light);
+    Serial.print("Avg soil value: ");
+    Serial.println(avg_soil);
+    Serial.print("Avg temp value: ");
     Serial.println(avg_temp);
+#endif
+  }
+  
+  if(task_5000_ms_flag)
+  {
+      esp_rmaker_param_update_and_report(
+        esp_rmaker_device_get_param_by_type(temp_sensor_rmaker, "esp.param.temperature"),
+        esp_rmaker_float(avg_temp));
+    
+      // esp_rmaker_param_update_and_report(
+      //   esp_rmaker_device_get_param_by_type(temp_sensor_rmaker, "esp.param.intensity"),
+      //   esp_rmaker_float(avg_light));
+
+      // esp_rmaker_param_update_and_report(
+      //   esp_rmaker_device_get_param_by_type(temp_sensor_rmaker, "esp.param.temperature"),
+      //   esp_rmaker_float(avg_soil));
+      task_5000_ms_flag = false;
+#if DEBUG_ENABLE == 1
+      Serial.println("5000ms");
+#endif 
   }
 
-  delay(100);
-  counter++;
+  if((millis()-counter_100ms) >= 100) 
+  {
+    task_100_ms_flag = true;
+    counter_100ms = millis();
+  }
+
+  if((millis()-counter_5000ms) >= 5000)
+  {
+    task_5000_ms_flag = true;
+    counter_5000ms = millis();
+  }
 }
