@@ -1,8 +1,9 @@
 /**
- * @file        ${file_base}.c
- * @authors   	${user}
- * @copyright 	Evident CopyRight.
- * @date		${date}
+ * @file        light.cpp
+ * @authors   	Marc-Antoine Doyon
+ * @copyright 	2023, Marc-Antoine Doyon @madoyon - GitHub
+ * You may use, distribute and modify this code under the terms of the MIT license 
+ * @date		2023-07-26
  */
 
 /* Private Includes -------------------------------------------------------*/

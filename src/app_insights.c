@@ -5,6 +5,7 @@
    software is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
    CONDITIONS OF ANY KIND, either express or implied.
 */
+
 #include <esp_err.h>
 #include <esp_log.h>
 #ifdef CONFIG_ESP_INSIGHTS_ENABLED

@@ -1,3 +1,12 @@
+/**
+ * @file        main.cpp
+ * @authors   	Marc-Antoine Doyon
+ * @copyright 	2023, Marc-Antoine Doyon @madoyon - GitHub
+ * You may use, distribute and modify this code under the terms of the MIT license 
+ * @date		2023-07-26
+ */
+
+/* Includes -------------------------------------------------------*/
 #include <Arduino.h>
 #include "esp32-hal-ledc.h"
 #include "main.h"
@@ -20,11 +29,15 @@
 #define DEBUG_ENABLE 0
 #define WIFI_RESET_BUTTON_TIMEOUT       3
 #define FACTORY_RESET_BUTTON_TIMEOUT    10
+#define CONFIG_ESP_RMAKER_MQTT_ENABLE_BUDGETING 0
 
+//Sensors on Mosty-S
 uint32_t soil_moisture;
 soil_t soil_sensor;
 LTR303_t light_sensor;
 temperature_t temp_sensor;
+
+//Average values of each sensor
 static float avg_light = 0;
 static float avg_soil = 0;
 static float avg_temp = 0;
@@ -40,7 +53,6 @@ bool task_100_ms_flag = false;
 bool task_1000_ms_flag = false;
 bool task_2000_ms_flag = false;
 bool task_5000_ms_flag = false;
-
 
 void setup() {
 
@@ -174,5 +186,4 @@ void loop() {
     task_5000_ms_flag = true;
     counter_5000ms = millis();
   }
-
 }

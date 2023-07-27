@@ -1,8 +1,9 @@
 /**
- * @file        ${file_base}.c
- * @authors   	${user}
- * @copyright 	Evident CopyRight.
- * @date		${date}
+ * @file        temperature.cpp
+ * @authors   	Marc-Antoine Doyon
+ * @copyright 	2023, Marc-Antoine Doyon @madoyon - GitHub
+ * You may use, distribute and modify this code under the terms of the MIT license 
+ * @date		2023-07-26
  */
 
 /* Private Includes -------------------------------------------------------*/
@@ -13,15 +14,13 @@
 #include "math.h"
 #include "esp_adc_cal.h"
 
-
 /* Private Defines --------------------------------------------------------*/
-#define DEBUG_MODE  1
+#define DEBUG_MODE  0
 #define RESOLUTION_12_BIT   4095
 #define VOLTAGE_REFERENCE_MV    3300
 /* Private Macros ---------------------------------------------------------*/
 /* Private Enumerations ---------------------------------------------------*/
 /* Private Structures -----------------------------------------------------*/
-
 /* Private Variables ------------------------------------------------------*/
 
 const double BALANCE_RESISTOR   = 10000.0;
@@ -98,12 +97,12 @@ void task_temperature_sensor(temperature_t* temp_sensor, float* avg_temp)
     
 #if DEBUG_MODE == 1
     //Get the average from the circular buffer
-    // Serial.print("Sum: ");
-    // Serial.println(adc_value);
+    Serial.print("Sum: ");
+    Serial.println(adc_value);
 
     //Get the average from the circular buffer
-    // Serial.print("Average: ");
-    // Serial.println(circular_buffer_get_avg(temp_sensor->cbuf));
+    Serial.print("Average: ");
+    Serial.println(circular_buffer_get_avg(temp_sensor->cbuf));
 #endif
 }
 
