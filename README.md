@@ -42,7 +42,7 @@ I2C_SCL | GPIO21 | **
 <img src="docs/3D_1.png" width="200px"></a>
 <img src="docs/3D_2.png" width="168px"></a>
 
-
+[Hardware Project](https://marc-antoine-doyon.365.altium.com/designs/D74DE22F-4307-434F-AC12-DA929295FED0#design)
 
 ## Flashing firmware to Mosty-S
 - Configure the PlatformIO project
