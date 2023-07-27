@@ -44,6 +44,9 @@ I2C_SCL | GPIO21 | **
 
 [Hardware Project](https://marc-antoine-doyon.365.altium.com/designs/D74DE22F-4307-434F-AC12-DA929295FED0#design)
 
+## Application overview
+<img src="docs/mosty_app.jpg" width="250px"></a>
+
 ## Flashing firmware to Mosty-S
 - Configure the PlatformIO project
 - Hold BOOT button, reset the board by pressing RESET button and release BOOT button. Using PlatformIO, build and upload the project to Mosty-S.
